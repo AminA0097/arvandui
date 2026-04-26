@@ -5,7 +5,7 @@ import CategoryShowcase from '@/components/products/CategoryShowcase';
 export default function HomePage() {
     return (
         <main>
-            <HeroSlider />
+            {/*<HeroSlider />*/}
             <NewArrivals />
             <CategoryShowcase />
         </main>
