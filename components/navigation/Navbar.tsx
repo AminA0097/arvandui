@@ -58,16 +58,6 @@ export default function Navbar(){
 ">
 
                 {/* mobile */}
-                <button
-                    className="
- md:hidden
- text-[11px]
- uppercase
- tracking-[0.18em]
-"
-                >
-                    Products
-                </button>
 
 
                 {/* brand */}
