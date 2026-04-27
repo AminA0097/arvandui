@@ -1,20 +1,30 @@
+// app/layout.tsx
 import "./globals.css";
-import Navbar from "@/components/navigation/Navbar";
-import FooterMobileMenu from "@/components/navigation/FooterMobileMenu";
-import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
-import Toast from "@/components/ui/Toast";
+import Navbar from "@/components/navigation/Navbar";
+import Footer from "@/components/Footer";
+import FooterMobileMenu from "@/components/navigation/FooterMobileMenu";
+import { Toaster } from "@/components/ui/toaster";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+    title: "Leather House | Premium Leather Goods",
+    description: "Discover handcrafted leather bags, boots, coats, and accessories.",
+};
+
+export default function RootLayout({
+                                       children,
+                                   }: {
+    children: React.ReactNode;
+}) {
     return (
         <html lang="en">
-        <body className="bg-[#faf9f7] text-stone-900">
+        <body className="min-h-screen bg-[#faf9f7] antialiased">
         <CartProvider>
             <Navbar />
-            {children}
+            <main className="pb-20 md:pb-0">{children}</main>
             <Footer />
             <FooterMobileMenu />
-            <Toast />
+            <Toaster />
         </CartProvider>
         </body>
         </html>
