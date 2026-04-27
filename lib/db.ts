@@ -11,7 +11,9 @@ export const products: Product[] = [
         price: 389,
         inStock: true,
         sizes: ["40", "41", "42", "43", "44"],
-        isNew: true
+        isNew: true,
+        isBestSeller: false,
+        rank:16
     },
     {
         id: "2",
@@ -21,7 +23,9 @@ export const products: Product[] = [
         category: "bags",
         price: 529,
         inStock: true,
-        isNew: true
+        isNew: true,
+        isBestSeller: false,
+        rank:49
     },
     {
         id: "3",
@@ -32,7 +36,9 @@ export const products: Product[] = [
         price: 899,
         inStock: true,
         sizes: ["S", "M", "L", "XL"],
-        isNew: true
+        isNew: true,
+        isBestSeller: true,
+        rank:19
     },
     {
         id: "4",
@@ -42,7 +48,9 @@ export const products: Product[] = [
         category: "accessories",
         price: 89,
         inStock: true,
-        isNew: true
+        isNew: true,
+        isBestSeller: true,
+        rank:36
     },
     {
         id: "5",
@@ -63,7 +71,9 @@ export const products: Product[] = [
         price: 359,
         inStock: true,
         sizes: ["40", "41", "42", "43"],
-        isNew: false
+        isNew: false,
+        isBestSeller: true,
+        rank:163
     },
     {
         id: "7",
@@ -73,7 +83,9 @@ export const products: Product[] = [
         category: "bags",
         price: 479,
         inStock: true,
-        isNew: false
+        isNew: false,
+        isBestSeller: true,
+        rank:36
     },
     {
         id: "8",
@@ -211,112 +223,6 @@ export const products: Product[] = [
         category: "bags",
         price: 399,
         inStock: true,
-        isNew: false
-    },
-    {
-        id: "21",
-        name: "Watch Strap",
-        detail: "Fits most standard watches.",
-        imageUrl: "/p21.jpg",
-        category: "accessories",
-        price: 49,
-        inStock: true,
-        sizes: ["18mm", "20mm", "22mm"],
-        isNew: false
-    },
-    {
-        id: "22",
-        name: "Shearling Jacket",
-        detail: "Warm shearling lining for extreme cold.",
-        imageUrl: "/p22.jpg",
-        category: "coats",
-        price: 1299,
-        inStock: true,
-        sizes: ["M", "L", "XL"],
-        isNew: false
-    },
-    {
-        id: "23",
-        name: "Combat Boots",
-        detail: "Military-inspired with rugged sole.",
-        imageUrl: "/p23.jpg",
-        category: "boots",
-        price: 419,
-        inStock: true,
-        sizes: ["40", "41", "42", "43", "44", "45"],
-        isNew: false
-    },
-    {
-        id: "24",
-        name: "Duffel Bag",
-        detail: "Spacious weekend getaway bag.",
-        imageUrl: "/p24.jpg",
-        category: "bags",
-        price: 559,
-        inStock: true,
-        isNew: false
-    },
-    {
-        id: "25",
-        name: "Phone Case",
-        detail: "Premium leather protection.",
-        imageUrl: "/p25.jpg",
-        category: "accessories",
-        price: 45,
-        inStock: true,
-        isNew: false
-    },
-    {
-        id: "26",
-        name: "Leather Vest",
-        detail: "Layered essential for any wardrobe.",
-        imageUrl: "/p26.jpg",
-        category: "coats",
-        price: 459,
-        inStock: true,
-        sizes: ["S", "M", "L", "XL"],
-        isNew: false
-    },
-    {
-        id: "27",
-        name: "Monk Strap Shoes",
-        detail: "Double buckle design with sleek profile.",
-        imageUrl: "/p27.jpg",
-        category: "boots",
-        price: 379,
-        inStock: true,
-        sizes: ["40", "41", "42", "43"],
-        isNew: false
-    },
-    {
-        id: "28",
-        name: "Clutch Bag",
-        detail: "Evening essential with wrist strap.",
-        imageUrl: "/p28.jpg",
-        category: "bags",
-        price: 199,
-        inStock: true,
-        isNew: false
-    },
-    {
-        id: "29",
-        name: "Passport Holder",
-        detail: "Travel in style with this essential.",
-        imageUrl: "/p29.jpg",
-        category: "accessories",
-        price: 59,
-        inStock: true,
-        isNew: false
-    },
-    {
-        id: "30",
-        name: "Trench Coat",
-        detail: "Classic design with leather belt.",
-        imageUrl: "/p30.jpg",
-        category: "coats",
-        price: 599,
-        inStock: true,
-        sizes: ["S", "M", "L", "XL"],
-        isNew: false
+        isNew: true
     }
 ];

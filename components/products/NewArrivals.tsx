@@ -1,31 +1,77 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
 import { Product } from "@/types/product";
 
 export default function NewArrivals() {
-    const [newProducts, setNewProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showAll, setShowAll] = useState(false);
+
+    const [emblaRef, emblaApi] = useEmblaCarousel(
+        {
+            loop: true,
+            align: "start",
+            skipSnaps: false,
+            dragFree: false,
+        },
+        [
+            Autoplay({
+                delay: 3000,
+                stopOnInteraction: false,
+            }),
+        ]
+    );
+
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
 
     useEffect(() => {
         fetch("/api/products")
             .then((res) => res.json())
-            .then((products) => {
-                const newOnes = products.filter((p: Product) => p.isNew === true);
-                setNewProducts(newOnes);
+            .then((data) => {
+                setProducts(data.filter((p: Product) => p.isNew));
                 setLoading(false);
             });
     }, []);
 
-    const displayedProducts = showAll ? newProducts : newProducts.slice(0, 5);
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
+    }, [emblaApi]);
+
+    const scrollTo = useCallback(
+        (index: number) => emblaApi?.scrollTo(index),
+        [emblaApi]
+    );
+
+    useEffect(() => {
+        if (!emblaApi) return;
+
+        const snapList = emblaApi.scrollSnapList();
+        setScrollSnaps(snapList);
+
+        const onSelect = () => {
+            setSelectedIndex(emblaApi.selectedScrollSnap());
+        };
+
+        emblaApi.on("select", onSelect);
+
+        // initial sync (safe)
+        onSelect();
+
+        return () => {
+            emblaApi.off("select", onSelect);
+        };
+    }, [emblaApi]);
 
     if (loading) {
         return (
             <section className="bg-[#faf9f7] py-14 md:py-24">
                 <div className="max-w-6xl mx-auto px-6">
-                    <div className="text-stone-400">Loading new arrivals...</div>
+                    <SkeletonGrid />
                 </div>
             </section>
         );
@@ -34,60 +80,105 @@ export default function NewArrivals() {
     return (
         <section className="bg-[#faf9f7] py-14 md:py-24">
             <div className="max-w-6xl mx-auto px-6">
+
                 {/* Header */}
-                <div className="mb-14 text-center md:text-left">
-                    <p className="uppercase tracking-[0.28em] text-xs text-stone-500 mb-3">
-                        Just Arrived
-                    </p>
+                <div className="mb-10 text-center md:text-left">
                     <h2 className="text-3xl md:text-5xl font-light">
                         New Collection
                     </h2>
-                    <p className="text-stone-500 mt-4 max-w-2xl">
-                        Discover our latest handcrafted leather pieces, designed for the modern wardrobe.
-                    </p>
                 </div>
 
-                {/* Products Grid */}
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {displayedProducts.map((product, i) => (
-                        <Link
-                            key={product.id}
-                            href={`/products/${product.category}/${product.id}`}
-                            className="group block bg-white border border-stone-200 rounded-2xl overflow-hidden transition hover:-translate-y-1 hover:shadow-sm"
-                        >
-                            <div className="aspect-[4/5] overflow-hidden bg-stone-100 relative">
-                                <img
-                                    src={product.imageUrl}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover transition duration-700 group-hover:scale-105"
-                                />
-                                <span className="absolute top-4 left-4 bg-stone-900 text-white text-xs px-3 py-1 rounded-full">
-                                    New
-                                </span>
+                {/* Slider */}
+                <div className="overflow-hidden" ref={emblaRef}>
+                    <div className="flex">
+
+                        {products.map((product) => (
+                            <div
+                                key={product.id}
+                                className="flex-[0_0_100%] md:flex-[0_0_50%] lg:flex-[0_0_33.33%] px-3"
+                            >
+                                <Link
+                                    href={`/products/${product.category}/${product.id}`}
+                                    className="block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:-translate-y-1 transition"
+                                >
+                                    <div className="aspect-[4/5] bg-stone-100 relative">
+                                        <img
+                                            src={product.imageUrl}
+                                            alt={product.name}
+                                            loading="lazy"
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <span className="absolute top-4 left-4 bg-black text-white text-xs px-3 py-1 rounded-full">
+                                            New
+                                        </span>
+                                    </div>
+
+                                    <div className="p-6">
+                                        <p className="text-xs uppercase tracking-[0.2em] text-stone-400">
+                                            {product.category}
+                                        </p>
+                                        <h3 className="text-xl font-light mt-2">
+                                            {product.name}
+                                        </h3>
+                                        <p className="text-stone-500 text-sm mt-1">
+                                            ${product.price}
+                                        </p>
+                                    </div>
+                                </Link>
                             </div>
-                            <div className="p-6">
-                                <p className="text-xs uppercase tracking-[0.2em] text-stone-400">
-                                    {product.category}
-                                </p>
-                                <h3 className="text-xl font-light mt-2">{product.name}</h3>
-                                <p className="text-stone-500 text-sm mt-1">${product.price}</p>
-                            </div>
-                        </Link>
+                        ))}
+
+                    </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-8 h-[2px] bg-stone-200 relative overflow-hidden rounded">
+                    <div
+                        className="h-full bg-stone-900 transition-all duration-300"
+                        style={{
+                            width: `${((selectedIndex + 1) / scrollSnaps.length) * 100}%`,
+                        }}
+                    />
+                </div>
+
+                {/* Dots */}
+                <div className="flex justify-center gap-2 mt-6">
+                    {scrollSnaps.map((_, i) => (
+                        <button
+                            key={i}
+                            onClick={() => scrollTo(i)}
+                            className={`w-2.5 h-2.5 rounded-full transition ${
+                                i === selectedIndex
+                                    ? "bg-stone-900 scale-125"
+                                    : "bg-stone-300"
+                            }`}
+                        />
                     ))}
                 </div>
 
-                {/* See More Button */}
-                {newProducts.length > 5 && (
-                    <div className="text-center mt-12">
-                        <button
-                            onClick={() => setShowAll(!showAll)}
-                            className="inline-flex items-center gap-2 rounded-2xl px-8 py-4 bg-stone-900 text-white hover:bg-stone-800 transition"
-                        >
-                            {showAll ? "Show Less" : `See All ${newProducts.length} New Arrivals`}
-                        </button>
-                    </div>
-                )}
             </div>
         </section>
+    );
+}
+
+/* ---------------- Skeleton ---------------- */
+
+function SkeletonGrid() {
+    return (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+                <div
+                    key={i}
+                    className="bg-white border border-stone-200 rounded-2xl overflow-hidden"
+                >
+                    <div className="aspect-[4/5] animate-pulse bg-stone-200" />
+                    <div className="p-6 space-y-3">
+                        <div className="h-3 w-20 bg-stone-200 rounded animate-pulse" />
+                        <div className="h-5 w-40 bg-stone-200 rounded animate-pulse" />
+                        <div className="h-3 w-16 bg-stone-200 rounded animate-pulse" />
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 }

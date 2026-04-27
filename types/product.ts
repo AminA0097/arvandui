@@ -8,4 +8,6 @@ export type Product = {
     inStock: boolean;
     sizes?: string[];
     isNew: boolean;
+    isBestSeller?: boolean;
+    rank?: number;
 };
