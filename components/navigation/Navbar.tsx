@@ -158,7 +158,7 @@ export default function Navbar() {
                     {/* Logo - centered on mobile, left on desktop */}
                     <Link href="/">
             <span className="text-sm md:text-xl font-light tracking-[0.2em] uppercase hover:opacity-80 transition whitespace-nowrap text-stone-800">
-              Leather House
+              Arvand Leather
             </span>
                     </Link>
 

@@ -49,7 +49,7 @@ export default function DesktopHome() {
                         <p className="text-stone-400 text-xs uppercase tracking-[0.3em] mb-2">
                             Fresh drops
                         </p>
-                        <h2 className="text-4xl font-light">New Arrivals</h2>
+                        <h2 className="text-4xl font-light">تازه ترین ها</h2>
                     </div>
                     <div className="flex gap-2">
                         <button

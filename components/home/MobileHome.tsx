@@ -41,7 +41,7 @@ export default function MobileHome() {
                         <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400">
                             Just dropped
                         </p>
-                        <h2 className="text-xl font-light mt-0.5">New Arrivals</h2>
+                        <h2 className="text-xl font-light mt-0.5">تازه ترین ها</h2>
                     </div>
                     {newProducts.length > 3 && (
                         <button

@@ -7,7 +7,7 @@ import FooterMobileMenu from "@/components/navigation/FooterMobileMenu";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
-    title: "Leather House | Premium Leather Goods",
+    title: "Arvand Leather",
     description: "Discover handcrafted leather bags, boots, coats, and accessories.",
 };
 

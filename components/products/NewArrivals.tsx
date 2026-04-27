@@ -87,7 +87,7 @@ export default function NewArrivals() {
                         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
                             Fresh Drops
                         </p>
-                        <h2 className="text-3xl md:text-4xl font-light">New Arrivals</h2>
+                        <h2 className="text-3xl md:text-4xl font-light">تازه ترین ها</h2>
                     </div>
                     <Link
                         href="/products"

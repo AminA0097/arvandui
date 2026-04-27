@@ -142,7 +142,7 @@ export default function MobileProductReveal() {
                 {/* HEADER */}
                 <div className="mb-14">
                     <p className="uppercase tracking-[0.28em] text-xs text-stone-500 mb-6">
-                        New Arrivals
+                        تازه ترین ها
                     </p>
 
                     <h2 className="text-3xl md:text-5xl font-light">
