@@ -14,6 +14,7 @@ import { ArrowLeft, Heart, ShoppingBag, Check } from "lucide-react";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 import { formatPrice } from "@/lib/utils";
+import Breadcrumb from "@/components/ui/Breadcrumbs";
 
 /**
  * Product detail page with image gallery, size selector, and add to cart
@@ -107,15 +108,16 @@ export default function ProductDetailPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
+            <Breadcrumb />
             {/* Back Button */}
-            <Button
-                variant="ghost"
-                className="mb-6 -ml-2"
-                onClick={() => router.back()}
-            >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-            </Button>
+            {/*<Button*/}
+            {/*    variant="ghost"*/}
+            {/*    className="mb-6 -ml-2"*/}
+            {/*    onClick={() => router.back()}*/}
+            {/*>*/}
+            {/*    <ArrowLeft className="h-4 w-4 mr-2" />*/}
+            {/*    Back*/}
+            {/*</Button>*/}
 
             <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
                 {/* Image Gallery */}

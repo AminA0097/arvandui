@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Product } from "@/types/product";
 import { Search, X } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import Breadcrumb from "@/components/ui/Breadcrumbs";
 
 const ITEMS_PER_PAGE = 12;
 
@@ -114,6 +115,7 @@ export default function ProductsPage() {
     return (
         <main className="bg-background min-h-screen py-12">
             <div className="container mx-auto px-6">
+            <Breadcrumb />
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>

@@ -177,32 +177,37 @@ export default function Navbar() {
 
                     {/* Desktop Right side actions */}
                     <div className="hidden md:flex items-center gap-2">
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9 bg-white hover:bg-stone-100">
-                                    <Search className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px] z-[200] bg-white">
-                                <DialogHeader>
-                                    <DialogTitle>Search Products</DialogTitle>
-                                </DialogHeader>
-                                <form onSubmit={handleSearch} className="flex gap-2 mt-4">
-                                    <Input
-                                        placeholder="Search leather goods..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="flex-1"
-                                        autoFocus
-                                    />
-                                    <Button type="submit">Search</Button>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
+                        {/*<Dialog>*/}
+                        {/*    <DialogTrigger asChild>*/}
+                        {/*        <Button variant="ghost" size="icon" className="h-9 w-9 bg-white hover:bg-stone-100">*/}
+                        {/*            <Search className="h-4 w-4" />*/}
+                        {/*        </Button>*/}
+                        {/*    </DialogTrigger>*/}
+                        {/*    <DialogContent className="sm:max-w-[425px] z-[200] bg-white">*/}
+                        {/*        <DialogHeader>*/}
+                        {/*            <DialogTitle>Search Products</DialogTitle>*/}
+                        {/*        </DialogHeader>*/}
+                        {/*        <form onSubmit={handleSearch} className="flex gap-2 mt-4">*/}
+                        {/*            <Input*/}
+                        {/*                placeholder="Search leather goods..."*/}
+                        {/*                value={searchQuery}*/}
+                        {/*                onChange={(e) => setSearchQuery(e.target.value)}*/}
+                        {/*                className="flex-1"*/}
+                        {/*                autoFocus*/}
+                        {/*            />*/}
+                        {/*            <Button type="submit">Search</Button>*/}
+                        {/*        </form>*/}
+                        {/*    </DialogContent>*/}
+                        {/*</Dialog>*/}
 
                         <Button variant="ghost" size="icon" asChild className="h-9 w-9 bg-white hover:bg-stone-100">
                             <Link href="/account">
                                 <User className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" asChild className="h-9 w-9 bg-white hover:bg-stone-100">
+                            <Link href="/search">
+                                <Search className="h-4 w-4" />
                             </Link>
                         </Button>
 

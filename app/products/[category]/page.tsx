@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { getProductsByCategory } from "@/services/productService";
 import { formatPrice } from "@/lib/utils";
+import Breadcrumb from "@/components/ui/Breadcrumbs";
 
 interface CategoryPageProps {
     params: Promise<{ category: string }>;
@@ -14,6 +15,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     return (
         <main className="bg-background min-h-screen py-12">
             <div className="container mx-auto px-6">
+                <Breadcrumb />
                 <h1 className="text-5xl font-light capitalize mb-10">
                     {category}
                 </h1>

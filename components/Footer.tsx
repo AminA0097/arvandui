@@ -1,54 +1,141 @@
-// components/Footer.tsx
-import Link from "next/link";
+"use client";
 
-/**
- * Footer component with links and copyright
- */
-export default function Footer() {
+import { useEffect, useRef, useState } from "react";
+import { PhoneCall, MessageCircle, Share2, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { contact } from "@/lib/contact";
+
+export default function FloatingContact() {
+    const [open, setOpen] = useState(false);
+    const [visible, setVisible] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+
+    const lastScroll = useRef(0);
+    const scrollDepth = useRef(0);
+
+    // 📱 detect mobile
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener("resize", check);
+        return () => window.removeEventListener("resize", check);
+    }, []);
+
+    // 📊 CLICK TRACKING (analytics)
+    const track = (action: string) => {
+        console.log("analytics:", action);
+
+        // future: send to API
+        // fetch("/api/track", { method: "POST", body: JSON.stringify({ action }) })
+    };
+
+    // 👀 scroll behavior + smart suggestion
+    useEffect(() => {
+        const handleScroll = () => {
+            const y = window.scrollY;
+
+            // hide/show FAB
+            setVisible(!(y > lastScroll.current && y > 100));
+
+            // scroll depth tracking
+            scrollDepth.current = y;
+
+            // smart suggestion trigger
+            if (y > 600 && !open) {
+                // user is engaged → suggest contact
+                setVisible(true);
+            }
+
+            lastScroll.current = y;
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [open]);
+
+    if (!isMobile) return null;
+
     return (
-        <footer className="border-t bg-background">
-            <div className="container mx-auto px-4 md:px-6 py-12">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-                    <div>
-                        <h3 className="font-medium mb-4">Shop</h3>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/products/bags" className="hover:text-primary transition">Bags</Link></li>
-                            <li><Link href="/products/boots" className="hover:text-primary transition">Boots</Link></li>
-                            <li><Link href="/products/coats" className="hover:text-primary transition">Coats</Link></li>
-                            <li><Link href="/products/accessories" className="hover:text-primary transition">Accessories</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-medium mb-4">Support</h3>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/contact" className="hover:text-primary transition">Contact</Link></li>
-                            <li><Link href="/shipping" className="hover:text-primary transition">Shipping</Link></li>
-                            <li><Link href="/returns" className="hover:text-primary transition">Returns</Link></li>
-                            <li><Link href="/faq" className="hover:text-primary transition">FAQ</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-medium mb-4">Company</h3>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="/about" className="hover:text-primary transition">About Us</Link></li>
-                            <li><Link href="/sustainability" className="hover:text-primary transition">Sustainability</Link></li>
-                            <li><Link href="/careers" className="hover:text-primary transition">Careers</Link></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 className="font-medium mb-4">Follow Us</h3>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="#" className="hover:text-primary transition">Instagram</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition">Twitter</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition">Facebook</Link></li>
-                            <li><Link href="#" className="hover:text-primary transition">Pinterest</Link></li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="border-t pt-8 text-center text-sm text-muted-foreground">
-                    <p>© {new Date().getFullYear()} Leather House. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
+        <>
+            {/* BACKDROP */}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                        onClick={() => setOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* PANEL */}
+            <AnimatePresence>
+                {open && (
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        className="fixed bottom-28 right-5 z-50 w-72 bg-white rounded-2xl shadow-2xl p-4"
+                    >
+                        {/* H1 */}
+                        <h1 className="text-center text-sm font-semibold mb-4">
+                            خرید تلفنی
+                        </h1>
+
+                        {/* CLOSE */}
+                        <button
+                            onClick={() => setOpen(false)}
+                            className="absolute top-2 right-2"
+                        >
+                            <X size={18} />
+                        </button>
+
+                        {/* WHATSAPP (MAIN CONVERSION BUTTON) */}
+
+                        {/* CALL */}
+                        <a
+                            href={`tel:${contact.phoneNumber}`}
+                            onClick={() => track("call_click")}
+                            className="flex items-center gap-2 text-sm mb-2"
+                        >
+                            <PhoneCall size={16} />
+                            تماس مستقیم
+                        </a>
+
+                        {/* SOCIAL */}
+                        <a
+                            href={contact.eitaaUrl}
+                            target="_blank"
+                            onClick={() => track("social_click")}
+                            className="flex items-center gap-2 text-sm"
+                        >
+                            <Share2 size={16} />
+                            شبکه اجتماعی
+                        </a>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* FLOATING BUTTON */}
+            <AnimatePresence>
+                {visible && (
+                    <motion.button
+                        onClick={() => {
+                            setOpen(true);
+                            track("fab_open");
+                        }}
+                        initial={{ scale: 0.6, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.6, opacity: 0, y: 20 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                        className="fixed bottom-18 right-6 z-[9999] w-14 h-14 rounded-full bg-black text-white flex items-center justify-center shadow-xl"
+                    >
+                        <PhoneCall size={20} />
+                    </motion.button>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
