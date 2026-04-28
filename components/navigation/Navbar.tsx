@@ -23,9 +23,7 @@ export default function Navbar() {
     const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
     const [underline, setUnderline] = useState({ width: 0, x: 0 });
 
-    // تعیین ایندکس فعال بر اساس تگ در صفحه اصلی
     const getActiveIndex = () => {
-        // اگر در صفحه اصلی هستیم
         if (pathname === "/") {
             const currentTag = searchParams.get("tag") || "all";
             const activeMenuItem = menu.findIndex((item) => item.tag === currentTag);
@@ -94,7 +92,7 @@ export default function Navbar() {
                                 {menu.map((item, i) => (
                                     <Link
                                         key={item.tag}
-                                        href={`/?tag=${item.tag}`}
+                                        href={`/products?q=${item.tag}`}
                                         ref={(el) => {
                                             itemRefs.current[i] = el;
                                         }}
@@ -139,7 +137,7 @@ export default function Navbar() {
                                     const formData = new FormData(e.currentTarget);
                                     const searchQuery = formData.get('search');
                                     if (searchQuery) {
-                                        router.push(`/search?q=${encodeURIComponent(searchQuery.toString())}`);
+                                        router.push(`/products?q=${encodeURIComponent(searchQuery.toString())}`);
                                         setSearchOpen(false);
                                     }
                                 }} className="flex-1 flex gap-4">

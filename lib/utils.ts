@@ -1,25 +1,34 @@
-// lib/utils.ts
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-/**
- * Merge Tailwind CSS classes with conditional classes
- * @param inputs - Class names or conditional class objects
- * @returns Merged class string
- */
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+export const toPersianNumbers = (num: number): string => {
+    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return num.toString().replace(/\d/g, (d) => persianDigits[parseInt(d)]);
+};
+
+export const normalizeToNumber = (value: string): number => {
+    const persianToEnglish: Record<string, string> = {
+        '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+        '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
+    };
+    let englishStr = '';
+    for (const char of value) {
+        if (persianToEnglish[char]) englishStr += persianToEnglish[char];
+        else if (char >= '0' && char <= '9') englishStr += char;
+    }
+    const num = parseInt(englishStr);
+    return isNaN(num) ? 0 : num;
+};
+
 /**
- * Format price to currency string
- * @param price - Price in dollars
- * @returns Formatted price string
+ * Formats a number as Persian price with commas and currency unit.
+ * @param price - Number to format
+ * @returns Formatted string like "۱۲,۳۴۰ تومان"
  */
 export function formatPrice(price: number): string {
-    return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2,
-    }).format(price);
+    return `${price.toLocaleString('fa-IR')} تومان`;
 }

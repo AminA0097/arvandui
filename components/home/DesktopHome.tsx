@@ -46,9 +46,9 @@ export default function DesktopHome() {
             <div className="max-w-7xl mx-auto px-10 py-12">
                 <div className="flex items-end justify-between mb-10">
                     <div>
-                        {/*<p className="text-stone-400 text-xs uppercase tracking-[0.3em] mb-2">*/}
+                        {/*<admin className="text-stone-400 text-xs uppercase tracking-[0.3em] mb-2">*/}
                         {/*    Fresh drops*/}
-                        {/*</p>*/}
+                        {/*</admin>*/}
                         <h2 className="text-4xl font-light">تازه ترین ها</h2>
                     </div>
                     <div className="flex gap-2">

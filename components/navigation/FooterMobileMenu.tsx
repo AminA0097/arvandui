@@ -26,10 +26,10 @@ export default function FooterMobileMenu() {
     };
 
     const navItems = [
-        { href: "/", label: "Home", icon: Home },
-        { href: "/search", label: "Search", icon: Search },
-        { action: "contact", label: "Contact", icon: PhoneCall },
-        { href: "/account", label: "Profile", icon: User },
+        { href: "/", label: "خانه", icon: Home },
+        { href: "/search", label: "جستجو", icon: Search },
+        { action: "contact", label: "خرید", icon: PhoneCall },
+        { href: "/account", label: "حساب", icon: User },
     ];
 
     return (
@@ -141,7 +141,7 @@ export default function FooterMobileMenu() {
                                 >
                                     <Icon size={22} strokeWidth={1.5} />
                                     <span className="text-[11px] font-medium">
-                                        Contact
+                                        خرید
                                     </span>
                                 </button>
                             );
