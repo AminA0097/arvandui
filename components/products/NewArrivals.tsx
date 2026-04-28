@@ -84,9 +84,9 @@ export default function NewArrivals() {
                 {/* Section Header */}
                 <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
                     <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
-                            Fresh Drops
-                        </p>
+                        {/*<p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">*/}
+                        {/*    Fresh Drops*/}
+                        {/*</p>*/}
                         <h2 className="text-3xl md:text-4xl font-light">تازه ترین ها</h2>
                     </div>
                     <Link

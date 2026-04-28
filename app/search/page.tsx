@@ -7,6 +7,12 @@ import { Product } from "@/types/product";
 import Breadcrumb from "@/components/ui/Breadcrumbs";
 import { Search, X } from "lucide-react";
 
+// تابع تبدیل اعداد به فارسی
+const toPersianNumbers = (num: number): string => {
+    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return num.toString().replace(/\d/g, (d) => persianDigits[parseInt(d)]);
+};
+
 export default function SearchPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -18,7 +24,7 @@ export default function SearchPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // 🧠 debounce + category-aware search
+    // دبانس + جستجو با در نظر گرفتن دسته‌بندی
     useEffect(() => {
         if (!q) return;
 
@@ -49,31 +55,42 @@ export default function SearchPage() {
         }
     };
 
+    // تبدیل نام دسته‌بندی به فارسی
+    const getCategoryName = (cat: string) => {
+        switch(cat) {
+            case "men": return "مردانه";
+            case "women": return "زنانه";
+            case "kids": return "بچگانه";
+            default: return "اکسسوری";
+        }
+    };
+
     return (
-        <main className="bg-[#faf9f7] min-h-screen py-12">
+        <main className="bg-[#faf9f7] min-h-screen py-12 pt-28 md:pt-32">
             <div className="max-w-4xl mx-auto px-6">
 
                 <Breadcrumb />
 
-                <h1 className="text-3xl font-light mb-6">Search</h1>
+                <h1 className="text-3xl font-light mb-6 text-right font-vazir">جستجو</h1>
 
-                {/* Search Input */}
+                {/* باکس جستجو */}
                 <form onSubmit={handleSearch} className="mb-10">
                     <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
+                        <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
 
                         <input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search products..."
-                            className="w-full pl-12 pr-12 py-4 border rounded-2xl bg-white"
+                            placeholder="جستجوی محصولات..."
+                            className="w-full pr-12 pl-12 py-4 border rounded-2xl bg-white text-right font-vazir text-base"
+                            dir="rtl"
                         />
 
                         {query && (
                             <button
                                 type="button"
                                 onClick={() => setQuery("")}
-                                className="absolute right-4 top-1/2 -translate-y-1/2"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 hover:text-stone-600 transition"
                             >
                                 <X size={18} />
                             </button>
@@ -81,14 +98,14 @@ export default function SearchPage() {
                     </div>
                 </form>
 
-                {/* Results */}
+                {/* نتایج */}
                 {loading ? (
-                    <div className="py-10 text-center">Loading...</div>
+                    <div className="py-10 text-center font-vazir text-stone-600">در حال بارگذاری...</div>
                 ) : (
                     <>
-                        <p className="text-sm text-stone-500 mb-4">
-                            {products.length} results for "{q}"
-                            {category && ` in ${category}`}
+                        <p className="text-sm text-stone-500 mb-4 text-right font-vazir">
+                            {toPersianNumbers(products.length)} نتیجه برای "{q}"
+                            {category && ` در دسته ${getCategoryName(category)}`}
                         </p>
 
                         <div className="grid md:grid-cols-2 gap-4">
@@ -96,9 +113,9 @@ export default function SearchPage() {
                                 <Link
                                     key={p.id}
                                     href={`/products/${p.category}/${p.id}`}
-                                    className="group flex gap-4 bg-white border rounded-xl p-3 hover:shadow-md transition"
+                                    className="group flex gap-4 bg-white border rounded-xl p-3 hover:shadow-md transition text-right"
                                 >
-                                    {/* IMAGE */}
+                                    {/* تصویر */}
                                     <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-stone-100">
                                         <img
                                             src={p.imageUrl}
@@ -107,23 +124,35 @@ export default function SearchPage() {
                                         />
                                     </div>
 
-                                    {/* CONTENT */}
-                                    <div className="flex flex-col justify-center">
-                                        <p className="text-xs text-stone-400 uppercase tracking-widest">
-                                            {p.category}
+                                    {/* محتوا */}
+                                    <div className="flex flex-col justify-center flex-1 gap-1">
+                                        <p className="text-xs text-stone-400 tracking-widest text-right font-vazir">
+                                            {getCategoryName(p.category)}
                                         </p>
 
-                                        <h3 className="font-medium text-stone-900 group-hover:text-stone-700">
+                                        <h3 className="font-medium text-stone-900 group-hover:text-stone-700 text-right font-vazir">
                                             {p.name}
                                         </h3>
 
-                                        <p className="text-sm text-stone-500">
-                                            ${p.price}
+                                        <p className="text-sm text-stone-500 text-right font-vazir">
+                                            {toPersianNumbers(p.price)} تومان
                                         </p>
                                     </div>
                                 </Link>
                             ))}
                         </div>
+
+                        {/* پیام عدم وجود نتیجه */}
+                        {products.length === 0 && q && (
+                            <div className="text-center py-16">
+                                <p className="text-stone-400 font-vazir text-lg">
+                                    متاسفانه محصولی یافت نشد
+                                </p>
+                                <p className="text-stone-300 text-sm mt-2 font-vazir">
+                                    کلمه دیگری جستجو کنید
+                                </p>
+                            </div>
+                        )}
                     </>
                 )}
             </div>

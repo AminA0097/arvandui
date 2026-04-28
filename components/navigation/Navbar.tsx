@@ -1,300 +1,192 @@
-// components/navigation/Navbar.tsx
 "use client";
 
-import * as React from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useCart } from "@/context/CartContext";
-import { ShoppingBag, Search, Menu, X, User, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-/**
- * Navigation categories for the mega menu
- */
-const categories = [
-    {
-        name: "Bags",
-        href: "/products/bags",
-        description: "Handcrafted leather bags for every occasion",
-        items: ["Tote Bags", "Backpacks", "Messenger Bags", "Clutches"],
-    },
-    {
-        name: "Boots",
-        href: "/products/boots",
-        description: "Premium leather boots for any terrain",
-        items: ["Chelsea Boots", "Lace-up Boots", "Desert Boots", "Motorcycle Boots"],
-    },
-    {
-        name: "Coats",
-        href: "/products/coats",
-        description: "Timeless leather jackets and coats",
-        items: ["Bomber Jackets", "Motorcycle Jackets", "Parka Coats", "Trench Coats"],
-    },
-    {
-        name: "Accessories",
-        href: "/products/accessories",
-        description: "Complete your look with leather accessories",
-        items: ["Wallets", "Belts", "Gloves", "Card Holders"],
-    },
+const menu = [
+    { label: "مردانه", tag: "men" },
+    { label: "زنانه", tag: "women" },
+    { label: "بچگانه", tag: "kids" },
+    { label: "اکسسوری", tag: "accessories" },
 ];
 
-/**
- * Desktop Dropdown Menu Component with solid background
- */
-function DesktopDropdownMenu({ category }: { category: typeof categories[0] }) {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const dropdownRef = React.useRef<HTMLDivElement>(null);
-    const timeoutRef = React.useRef<NodeJS.Timeout>();
+export default function Navbar() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [scrolled, setScrolled] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+    const [underline, setUnderline] = useState({ width: 0, x: 0 });
 
-    const handleMouseEnter = () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        setIsOpen(true);
+    // تعیین ایندکس فعال بر اساس تگ در صفحه اصلی
+    const getActiveIndex = () => {
+        // اگر در صفحه اصلی هستیم
+        if (pathname === "/") {
+            const currentTag = searchParams.get("tag") || "all";
+            const activeMenuItem = menu.findIndex((item) => item.tag === currentTag);
+            return activeMenuItem !== -1 ? activeMenuItem : -1;
+        }
+        // برای صفحات دیگر (مثل product)
+        return -1;
     };
 
-    const handleMouseLeave = () => {
-        timeoutRef.current = setTimeout(() => {
-            setIsOpen(false);
-        }, 150);
-    };
+    const activeIndex = getActiveIndex();
 
-    React.useEffect(() => {
-        return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    // scroll shrink
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
         };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // dynamic underline based on text width
+    useEffect(() => {
+        if (activeIndex === -1) return;
+
+        const el = itemRefs.current[activeIndex];
+        if (!el) return;
+
+        const rect = el.getBoundingClientRect();
+        const parentRect = el.parentElement!.getBoundingClientRect();
+
+        setUnderline({
+            width: rect.width,
+            x: rect.left - parentRect.left,
+        });
+    }, [activeIndex, pathname, searchParams]);
+
     return (
-        <div
-            ref={dropdownRef}
-            className="relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+        <header
+            className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+                scrolled
+                    ? "py-4 bg-white/70 dark:bg-black/70 backdrop-blur-xl shadow-md"
+                    : "py-8 bg-transparent"
+            }`}
         >
-            <button
-                className={cn(
-                    "flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-md transition-colors",
-                    "bg-white hover:bg-stone-100 text-stone-700",
-                    isOpen && "bg-stone-100"
-                )}
-            >
-                {category.name}
-                <ChevronDown className={cn(
-                    "h-3 w-3 transition-transform duration-200",
-                    isOpen && "rotate-180"
-                )} />
-            </button>
+            <div className="flex justify-center items-center">
 
-            {isOpen && (
-                <div className="absolute left-0 top-full pt-2 z-[200]">
-                    <div className="w-[500px] rounded-xl border bg-white shadow-lg overflow-hidden">
-                        <div className="grid gap-3 p-6 lg:grid-cols-[0.75fr_1fr]">
-                            <div className="rounded-xl bg-stone-50 p-4">
-                                <h4 className="mb-2 text-sm font-medium">{category.name}</h4>
-                                <p className="text-sm text-stone-500">
-                                    {category.description}
-                                </p>
-                                <Button asChild variant="outline" size="sm" className="mt-4 bg-white">
-                                    <Link href={category.href}>Shop All →</Link>
-                                </Button>
-                            </div>
-                            <div>
-                                <ul className="grid gap-2">
-                                    {category.items.map((item) => (
-                                        <li key={item}>
-                                            <Link
-                                                href={`${category.href}?type=${item.toLowerCase().replace(/\s+/g, "-")}`}
-                                                className="block rounded-md p-2 text-sm text-stone-600 hover:bg-stone-100 transition"
-                                            >
-                                                {item}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-/**
- * Main navigation bar
- * Mobile: Only shows brand name
- * Desktop: Full navigation with solid backgrounds
- */
-export default function Navbar() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-    const [searchQuery, setSearchQuery] = React.useState("");
-    const router = useRouter();
-    const { itemCount } = useCart();
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-            setSearchQuery("");
-            setIsMobileMenuOpen(false);
-        }
-    };
-
-    return (
-        <>
-            <header className="sticky top-0 z-[100] w-full border-b bg-white">
-                <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-                    {/* Empty div for spacing on mobile */}
-                    <div className="md:hidden w-9" />
-
-                    {/* Logo - centered on mobile, left on desktop */}
-                    <Link href="/">
-            <span className="text-sm md:text-xl font-light tracking-[0.2em] uppercase hover:opacity-80 transition whitespace-nowrap text-stone-800">
-              Arvand Leather
-            </span>
-                    </Link>
-
-                    {/* Desktop Navigation - hidden on mobile, solid backgrounds */}
-                    <div className="hidden md:flex items-center gap-2">
-                        {categories.map((category) => (
-                            <DesktopDropdownMenu key={category.name} category={category} />
-                        ))}
-                        <Link
-                            href="/products"
-                            className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-white hover:bg-stone-100 text-stone-700"
-                        >
-                            All Products
-                        </Link>
-                    </div>
-
-                    {/* Desktop Right side actions */}
-                    <div className="hidden md:flex items-center gap-2">
-                        {/*<Dialog>*/}
-                        {/*    <DialogTrigger asChild>*/}
-                        {/*        <Button variant="ghost" size="icon" className="h-9 w-9 bg-white hover:bg-stone-100">*/}
-                        {/*            <Search className="h-4 w-4" />*/}
-                        {/*        </Button>*/}
-                        {/*    </DialogTrigger>*/}
-                        {/*    <DialogContent className="sm:max-w-[425px] z-[200] bg-white">*/}
-                        {/*        <DialogHeader>*/}
-                        {/*            <DialogTitle>Search Products</DialogTitle>*/}
-                        {/*        </DialogHeader>*/}
-                        {/*        <form onSubmit={handleSearch} className="flex gap-2 mt-4">*/}
-                        {/*            <Input*/}
-                        {/*                placeholder="Search leather goods..."*/}
-                        {/*                value={searchQuery}*/}
-                        {/*                onChange={(e) => setSearchQuery(e.target.value)}*/}
-                        {/*                className="flex-1"*/}
-                        {/*                autoFocus*/}
-                        {/*            />*/}
-                        {/*            <Button type="submit">Search</Button>*/}
-                        {/*        </form>*/}
-                        {/*    </DialogContent>*/}
-                        {/*</Dialog>*/}
-
-                        <Button variant="ghost" size="icon" asChild className="h-9 w-9 bg-white hover:bg-stone-100">
-                            <Link href="/account">
-                                <User className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon" asChild className="h-9 w-9 bg-white hover:bg-stone-100">
-                            <Link href="/search">
-                                <Search className="h-4 w-4" />
-                            </Link>
-                        </Button>
-
-                        <Button variant="ghost" size="icon" className="relative h-9 w-9 bg-white hover:bg-stone-100" asChild>
-                            <Link href="/cart">
-                                <ShoppingBag className="h-4 w-4" />
-                                {itemCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-stone-800 text-white text-[9px] font-medium">
-                    {itemCount > 9 ? "9+" : itemCount}
-                  </span>
-                                )}
-                            </Link>
-                        </Button>
-                    </div>
-
-                    {/* Empty div for spacing on mobile */}
-                    <div className="md:hidden w-9" />
-                </div>
-            </header>
-
-            {/* Mobile Menu Drawer - triggered by URL or other means */}
-            <Dialog open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                <DialogContent className="fixed top-0 right-0 left-auto translate-x-0 translate-y-0 w-[85%] max-w-sm h-full rounded-l-2xl rounded-r-none p-0 z-[200]">
-                    <div className="flex flex-col h-full bg-white">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <span className="font-medium text-lg">Menu</span>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setIsMobileMenuOpen(false)}
+                {/* Capsule */}
+                <div
+                    className={`relative hidden md:flex items-center rounded-full
+          bg-white/40 dark:bg-white/10 backdrop-blur-xl
+          border border-white/30 dark:border-white/10
+          transition-all duration-500
+          ${scrolled ? "px-10 py-3" : "px-16 py-5"}
+          gap-[clamp(2rem,4vw,3.5rem)]`}
+                >
+                    <AnimatePresence mode="wait">
+                        {!searchOpen ? (
+                            <motion.div
+                                key="menu"
+                                className="flex items-center gap-[clamp(2rem,4vw,3.5rem)] relative"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                             >
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </div>
+                                {/* MENU */}
+                                {menu.map((item, i) => (
+                                    <Link
+                                        key={item.tag}
+                                        href={`/?tag=${item.tag}`}
+                                        ref={(el) => {
+                                            itemRefs.current[i] = el;
+                                        }}
+                                        className="relative text-sm text-gray-800 dark:text-gray-200 hover:text-black dark:hover:text-white transition-colors"
+                                    >
+                                        <span className={activeIndex === i ? "font-semibold" : ""}>
+                                            {item.label}
+                                        </span>
 
-                        <div className="flex-1 overflow-y-auto p-4">
-                            <div className="space-y-6">
-                                {categories.map((category) => (
-                                    <div key={category.name}>
-                                        <Link
-                                            href={category.href}
-                                            className="block font-medium text-lg mb-2 hover:text-stone-600 transition"
-                                            onClick={() => setIsMobileMenuOpen(false)}
-                                        >
-                                            {category.name}
-                                        </Link>
-                                        <div className="grid grid-cols-2 gap-2 pl-2">
-                                            {category.items.map((item) => (
-                                                <Link
-                                                    key={item}
-                                                    href={`${category.href}?type=${item.toLowerCase().replace(/\s+/g, "-")}`}
-                                                    className="text-sm text-stone-500 hover:text-stone-800 py-2 px-2 rounded-lg hover:bg-stone-50 transition"
-                                                    onClick={() => setIsMobileMenuOpen(false)}
-                                                >
-                                                    {item}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </div>
+                                        {activeIndex === i && (
+                                            <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-black dark:bg-white rounded-full" />
+                                        )}
+                                    </Link>
                                 ))}
-                                <Link
-                                    href="/products"
-                                    className="block font-medium text-lg mt-4 pt-4 border-t hover:text-stone-600 transition"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    All Products
-                                </Link>
-                            </div>
-                        </div>
 
-                        {/* Mobile search form */}
-                        <div className="p-4 border-t bg-stone-50">
-                            <form onSubmit={handleSearch} className="flex gap-2">
-                                <Input
-                                    placeholder="Search products..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="flex-1 bg-white"
-                                />
-                                <Button type="submit" size="sm" onClick={() => setIsMobileMenuOpen(false)}>
-                                    Go
-                                </Button>
-                            </form>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </>
+                                {/* sliding underline */}
+                                {activeIndex !== -1 && (
+                                    <motion.div
+                                        className="absolute -bottom-2 h-[2px] bg-black dark:bg-white"
+                                        animate={{
+                                            width: underline.width,
+                                            x: underline.x,
+                                        }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 350,
+                                            damping: 30,
+                                        }}
+                                    />
+                                )}
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="search"
+                                className="flex items-center gap-4 w-[500px]"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                            >
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const searchQuery = formData.get('search');
+                                    if (searchQuery) {
+                                        router.push(`/search?q=${encodeURIComponent(searchQuery.toString())}`);
+                                        setSearchOpen(false);
+                                    }
+                                }} className="flex-1 flex gap-4">
+                                    <input
+                                        name="search"
+                                        autoFocus
+                                        placeholder="چی می‌خوای پیدا کنی؟ 😏"
+                                        className="flex-1 bg-transparent border-b border-black dark:border-white focus:outline-none pb-1 text-right"
+                                        dir="rtl"
+                                    />
+                                    <button type="submit" className="hidden">جستجو</button>
+                                </form>
+                                <button onClick={() => setSearchOpen(false)}>
+                                    <X />
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* BRAND */}
+                    {!searchOpen && (
+                        <Link
+                            href="/"
+                            className="tracking-[0.4em] text-xl font-light text-black dark:text-white"
+                        >
+                            ARVAND
+                        </Link>
+                    )}
+
+                    {/* SEARCH BUTTON */}
+                    {!searchOpen && (
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="p-2 rounded-full hover:bg-white/20 transition"
+                        >
+                            <Search className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
+
+                {/* MOBILE */}
+                <div className="md:hidden flex justify-center w-full">
+                    <Link href="/" className="tracking-[0.4em] text-lg font-light">
+                        ARVAND
+                    </Link>
+                </div>
+            </div>
+        </header>
     );
 }

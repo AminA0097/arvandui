@@ -10,6 +10,21 @@ import Breadcrumb from "@/components/ui/Breadcrumbs";
 
 const ITEMS_PER_PAGE = 12;
 
+// تابع تبدیل اعداد به فارسی
+const toPersianNumbers = (num: number): string => {
+    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return num.toString().replace(/\d/g, (d) => persianDigits[parseInt(d)]);
+};
+
+// نگاشت دسته‌بندی‌ها به فارسی
+const categoryLabels: Record<string, string> = {
+    all: "همه",
+    bags: "کیف",
+    boots: "چکمه",
+    coats: "کت",
+    accessories: "اکسسوری",
+};
+
 export default function ProductsPage() {
     const [allProducts, setAllProducts] = useState<Product[]>([]);
     const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
@@ -100,7 +115,7 @@ export default function ProductsPage() {
 
     if (loading) {
         return (
-            <main className="bg-background min-h-screen py-12">
+            <main className="bg-background min-h-screen py-12 pt-28 md:pt-32">
                 <div className="container mx-auto px-6">
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -113,15 +128,16 @@ export default function ProductsPage() {
     }
 
     return (
-        <main className="bg-background min-h-screen py-12">
+        <main className="bg-background min-h-screen py-12 pt-28 md:pt-32">
             <div className="container mx-auto px-6">
-            <Breadcrumb />
+                <Breadcrumb />
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-                    <div>
-                        <h1 className="text-4xl md:text-5xl font-light">All Products</h1>
-                        <p className="text-muted-foreground mt-2">
-                            {filteredProducts.length} products
+                    <div className="text-right">
+                        <h1 className="text-4xl md:text-5xl font-light font-vazir">همه محصولات</h1>
+                        <p className="text-muted-foreground mt-2 font-vazir">
+                            {toPersianNumbers(filteredProducts.length)} محصول
                         </p>
                     </div>
                 </div>
@@ -133,30 +149,31 @@ export default function ProductsPage() {
                             <button
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
-                                className={`px-5 py-2 rounded-full text-sm transition-all duration-300 ${
+                                className={`px-5 py-2 rounded-full text-sm transition-all duration-300 font-vazir ${
                                     selectedCategory === cat
                                         ? "bg-primary text-primary-foreground shadow-md"
                                         : "bg-white border text-muted-foreground hover:border-primary hover:-translate-y-0.5"
                                 }`}
                             >
-                                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                {categoryLabels[cat]}
                             </button>
                         ))}
                     </div>
 
                     <div className="relative w-full md:w-80">
-                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <input
                             type="text"
-                            placeholder="Search products..."
+                            placeholder="جستجوی محصولات..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-10 py-2.5 rounded-full border bg-white focus:border-primary focus:shadow-md transition-all outline-none"
+                            className="w-full pr-11 pl-10 py-2.5 rounded-full border bg-white focus:border-primary focus:shadow-md transition-all outline-none text-right font-vazir"
+                            dir="rtl"
                         />
                         {searchTerm && (
                             <button
                                 onClick={() => setSearchTerm("")}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
                                 <X size={16} />
                             </button>
@@ -166,30 +183,30 @@ export default function ProductsPage() {
 
                 {/* Active Filters */}
                 {(selectedCategory !== "all" || searchTerm) && (
-                    <div className="flex flex-wrap gap-2 mb-6">
+                    <div className="flex flex-wrap gap-2 mb-6 justify-end">
                         {selectedCategory !== "all" && (
                             <button
                                 onClick={() => setSelectedCategory("all")}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded-full text-xs hover:bg-muted/80"
+                                className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded-full text-xs hover:bg-muted/80 font-vazir"
                             >
-                                Category: {selectedCategory}
+                                دسته: {categoryLabels[selectedCategory]}
                                 <X size={12} />
                             </button>
                         )}
                         {searchTerm && (
                             <button
                                 onClick={() => setSearchTerm("")}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded-full text-xs hover:bg-muted/80"
+                                className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded-full text-xs hover:bg-muted/80 font-vazir"
                             >
-                                Search: {searchTerm}
+                                جستجو: {searchTerm}
                                 <X size={12} />
                             </button>
                         )}
                         <button
                             onClick={clearFilters}
-                            className="text-xs text-muted-foreground hover:text-foreground underline"
+                            className="text-xs text-muted-foreground hover:text-foreground underline font-vazir"
                         >
-                            Clear all
+                            حذف همه
                         </button>
                     </div>
                 )}
@@ -200,7 +217,7 @@ export default function ProductsPage() {
                         <Link
                             key={product.id}
                             href={`/products/${product.category}/${product.id}`}
-                            className="group block bg-white border rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl"
+                            className="group block bg-white border rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-xl text-right"
                         >
                             <div className="aspect-[4/5] overflow-hidden bg-muted relative">
                                 <img
@@ -210,25 +227,25 @@ export default function ProductsPage() {
                                     loading="lazy"
                                 />
                                 {product.isNew && (
-                                    <span className="absolute top-4 left-4 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full">
-                    New
-                  </span>
+                                    <span className="absolute top-4 right-4 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-vazir">
+                                        جدید
+                                    </span>
                                 )}
                                 {!product.inStock && (
-                                    <span className="absolute bottom-4 left-4 bg-destructive text-destructive-foreground text-xs px-3 py-1 rounded-full">
-                    Out of Stock
-                  </span>
+                                    <span className="absolute bottom-4 right-4 bg-destructive text-destructive-foreground text-xs px-3 py-1 rounded-full font-vazir">
+                                        ناموجود
+                                    </span>
                                 )}
                             </div>
                             <div className="p-5">
-                                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                                    {product.category}
+                                <p className="text-xs uppercase tracking-wider text-muted-foreground font-vazir">
+                                    {categoryLabels[product.category] || product.category}
                                 </p>
-                                <h3 className="text-lg font-medium mt-2 group-hover:text-primary transition line-clamp-1">
+                                <h3 className="text-lg font-medium mt-2 group-hover:text-primary transition line-clamp-1 font-vazir">
                                     {product.name}
                                 </h3>
-                                <p className="text-foreground font-semibold mt-1">
-                                    {formatPrice(product.price)}
+                                <p className="text-foreground font-semibold mt-1 font-vazir">
+                                    {toPersianNumbers(product.price)} تومان
                                 </p>
                             </div>
                         </Link>
@@ -241,7 +258,7 @@ export default function ProductsPage() {
                         {loadingMore ? (
                             <div className="flex items-center gap-3">
                                 <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                                <span className="text-muted-foreground text-sm">Loading more...</span>
+                                <span className="text-muted-foreground text-sm font-vazir">بارگذاری بیشتر...</span>
                             </div>
                         ) : (
                             <div className="h-10" />
@@ -252,19 +269,19 @@ export default function ProductsPage() {
                 {/* End of Products */}
                 {!hasMore && displayedProducts.length > 0 && (
                     <div className="text-center py-12">
-                        <p className="text-muted-foreground text-sm">You've reached the end</p>
+                        <p className="text-muted-foreground text-sm font-vazir">به انتها رسیدید</p>
                     </div>
                 )}
 
                 {/* No Results */}
                 {filteredProducts.length === 0 && (
                     <div className="text-center py-20">
-                        <p className="text-muted-foreground mb-4">No products found.</p>
+                        <p className="text-muted-foreground mb-4 font-vazir">محصولی یافت نشد.</p>
                         <button
                             onClick={clearFilters}
-                            className="rounded-xl px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 transition"
+                            className="rounded-xl px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 transition font-vazir"
                         >
-                            Clear Filters
+                            حذف فیلترها
                         </button>
                     </div>
                 )}

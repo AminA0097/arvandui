@@ -1,5 +1,6 @@
 // types/product.ts
 export type ProductCategory = "bags" | "boots" | "coats" | "accessories";
+export type ProductTag = "all" | "men" | "women" | "kids" | "accessories";
 
 /**
  * Product interface representing a leather good
@@ -11,6 +12,7 @@ export interface Product {
     imageUrl: string;
     category: ProductCategory;
     price: number;
+    tags: ProductTag[];
     inStock: boolean;
     sizes?: string[];
     isNew: boolean;
