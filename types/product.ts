@@ -1,14 +1,35 @@
-export type ProductCategory = 'bags' | 'boots' | 'coats' | 'accessories';
-export type ProductTag = 'men' | 'women' | 'kids' | 'accessories';
-export type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'popular' | 'bestseller';
-export type StockFilter = 'all' | 'in_stock' | 'out_of_stock';
+/**
+ * Core product and filter types shared across the app.
+ */
 
-export const tagLabels: Record<ProductTag, string> = {
-    men: 'مردانه',
-    women: 'زنانه',
-    kids: 'بچگانه',
-    accessories: 'اکسسوری',
-};
+export type ProductCategory = 'bags' | 'boots' | 'coats' | 'accessories';
+
+export interface Product {
+    id: string;
+    name: string;
+    category: ProductCategory;
+    price: number;
+    imageUrl: string;
+    isNew?: boolean;
+    isBestSeller?: boolean;
+    discount?: number; // percentage
+    inStock: boolean;
+    views: number;
+    tags: string[];
+    detail?: string;
+    rank?: number;
+    createdAt: string;
+
+}
+
+export interface Filters {
+    query: string;
+    categories: ProductCategory[];
+    sort: 'newest' | 'price_asc' | 'price_desc' | 'popular';
+    stock: 'all' | 'in_stock' | 'out_of_stock';
+    minPrice: number;
+    maxPrice: number;
+}
 
 export const categoryLabels: Record<ProductCategory, string> = {
     bags: 'کیف',
@@ -17,46 +38,21 @@ export const categoryLabels: Record<ProductCategory, string> = {
     accessories: 'اکسسوری',
 };
 
-export interface Product {
-    id: string;
-    name: string;
-    detail: string;
-    imageUrl: string;
-    category: ProductCategory;
-    tags: ProductTag[];
-    price: number;
-    inStock: boolean;
-    sizes?: string[];
-    isNew: boolean;
-    isBestSeller?: boolean;
-    rank?: number;
-    views: number;
-    createdAt: string;
-    discount?: number;
-}
-
-export interface Filters {
-    query: string;
-    category: ProductCategory | 'all';
-    sort: SortOption;
-    stock: StockFilter;
-    minPrice: number;
-    maxPrice: number;
-    tags?: ProductTag[];      // optional: filter by tags (comma separated)
-    cursor: string | null;
-    limit: number;
-}
-
-export const sortOptions: { value: SortOption; label: string }[] = [
+export const sortOptions = [
     { value: 'newest', label: 'جدیدترین' },
-    { value: 'price_asc', label: 'ارزان‌ترین' },
-    { value: 'price_desc', label: 'گران‌ترین' },
+    { value: 'price_asc', label: 'قیمت: کم به زیاد' },
+    { value: 'price_desc', label: 'قیمت: زیاد به کم' },
     { value: 'popular', label: 'محبوب‌ترین' },
-    { value: 'bestseller', label: 'پرفروش‌ترین' },
 ];
 
-export const stockOptions: { value: StockFilter; label: string }[] = [
+export const stockOptions = [
     { value: 'all', label: 'همه' },
     { value: 'in_stock', label: 'موجود' },
     { value: 'out_of_stock', label: 'ناموجود' },
 ];
+
+export const tagLabels: Record<string, string> = {
+    leather: 'چرم',
+    handcrafted: 'دست‌ساز',
+    limited: 'نسخه محدود',
+};

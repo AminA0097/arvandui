@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRequestLock } from './useRequestLock';
+import { useDebounce } from './useDebounce';
 import { Filters, Product } from '@/types/product';
 
 interface UseProductsReturn {
@@ -10,69 +12,71 @@ interface UseProductsReturn {
     loadMore: () => void;
     total: number;
     hasMore: boolean;
-    refetch: (newFilters: Partial<Omit<Filters, 'cursor' | 'limit'>>) => void;
 }
 
-export function useProducts(initialFilters: Omit<Filters, 'cursor' | 'limit'>): UseProductsReturn {
+export function useProducts(filters: Omit<Filters, 'cursor' | 'limit'>): UseProductsReturn {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [cursor, setCursor] = useState<string | null>(null);
     const [total, setTotal] = useState(0);
-    const filtersRef = useRef(initialFilters);
+    const [hasMore, setHasMore] = useState(false);
 
-    const fetchProducts = useCallback(async (reset: boolean, currentCursor: string | null) => {
-        const body = {
-            ...filtersRef.current,
-            cursor: reset ? null : currentCursor,
-            limit: 12,
-        };
-        const res = await fetch('/api/products', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-        });
-        const json = await res.json();
-        const newProducts = json.data ?? [];
-        setCursor(json.nextCursor ?? null);
-        setTotal(json.total ?? 0);
-        setProducts((prev) => (reset ? newProducts : [...prev, ...newProducts]));
-    }, []);
+    const debouncedFilters = useDebounce(filters, 300);
+    const { startRequest, isLatest } = useRequestLock();
 
-    const loadMore = useCallback(async () => {
-        if (!cursor || loadingMore) return;
-        setLoadingMore(true);
-        await fetchProducts(false, cursor);
-        setLoadingMore(false);
-    }, [cursor, loadingMore, fetchProducts]);
+    const fetchProducts = useCallback(
+        async (reset: boolean, currentCursor: string | null) => {
+            const requestId = startRequest();
+            const isLoadMore = !reset && currentCursor !== null;
 
-    const refetch = useCallback((newFilters: Partial<Omit<Filters, 'cursor' | 'limit'>>) => {
-        filtersRef.current = { ...filtersRef.current, ...newFilters };
-        setLoading(true);
-        setProducts([]);
-        fetchProducts(true, null).finally(() => setLoading(false));
+            if (isLoadMore) {
+                setLoadingMore(true);
+            } else {
+                setLoading(true);
+            }
+
+            try {
+                const res = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...debouncedFilters,
+                        cursor: currentCursor,
+                        limit: 12,
+                    }),
+                });
+
+                const json = await res.json();
+                if (!isLatest(requestId)) return;
+
+                const incoming = json.data ?? [];
+                const newTotal = json.total ?? 0;
+                const nextCursor = json.nextCursor ?? null;
+
+                setProducts((prev) => (reset ? incoming : [...prev, ...incoming]));
+                setTotal(newTotal);
+                setCursor(nextCursor);
+                setHasMore(!!nextCursor);
+            } catch (error) {
+                console.error('Failed to fetch products', error);
+            } finally {
+                if (reset || !isLoadMore) setLoading(false);
+                if (isLoadMore) setLoadingMore(false);
+            }
+        },
+        [debouncedFilters, startRequest, isLatest]
+    );
+
+    // این useEffect فقط یک بار و هر بار که debouncedFilters تغییر کند اجرا می‌شود
+    useEffect(() => {
+        fetchProducts(true, null);
     }, [fetchProducts]);
 
-    useEffect(() => {
-        refetch(initialFilters);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        initialFilters.query,
-        initialFilters.categories,
-        initialFilters.sort,
-        initialFilters.stock,
-        initialFilters.minPrice,
-        initialFilters.maxPrice,
-        initialFilters.tags,
-    ]);
+    const loadMore = useCallback(() => {
+        if (!hasMore || loadingMore || loading) return;
+        fetchProducts(false, cursor);
+    }, [hasMore, loadingMore, loading, cursor, fetchProducts]);
 
-    return {
-        products,
-        loading,
-        loadingMore,
-        loadMore,
-        total,
-        hasMore: !!cursor,
-        refetch,
-    };
+    return { products, loading, loadingMore, loadMore, total, hasMore };
 }

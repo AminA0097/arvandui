@@ -1,36 +1,26 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { redis } from '@/lib/redis';
 import { Product } from '@/types/product';
-import { products as localProducts } from '@/lib/db'; // fallback
+import { products as localProducts } from '@/lib/db';
 
 const MASTER_KEY = 'products:master';
 
-async function getMasterProducts(): Promise<Product[]> {
+async function getBaseProducts(): Promise<Product[]> {
     try {
-        const data = await redis.get(MASTER_KEY);
-        console.log(data)
-        if (data) {
-            try {
-                const parsed = JSON.parse(data);
-                // Accept both array and { items: [...] } structures
-                const productsArray = Array.isArray(parsed) ? parsed : parsed?.items ?? [];
-                if (productsArray.length > 0) {
-                    return productsArray;
-                }
-                console.warn('⚠️ Redis data has empty products, falling back to local db');
-            } catch (parseErr) {
-                console.error('❌ Invalid JSON in Redis for key:', MASTER_KEY, parseErr);
-                // Optionally delete the corrupted key to avoid repeated errors
-                await redis.del(MASTER_KEY);
-            }
+        const cached = await redis.get(MASTER_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            const list = Array.isArray(parsed) ? parsed : parsed?.items ?? [];
+            if (list.length) return list;
         }
-    } catch (redisErr) {
-        console.error('❌ Redis connection error:', redisErr);
+    } catch {
+        // fallback to local
     }
-
-    // Fallback to local db.ts
-    console.log('📦 Using local db.ts as product source');
     return localProducts;
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export async function POST(req: Request) {
@@ -42,77 +32,75 @@ export async function POST(req: Request) {
             sort = 'newest',
             stock = 'all',
             minPrice = 0,
-            maxPrice = Infinity,
-            tags = [],
+            maxPrice = Number.MAX_SAFE_INTEGER,
             cursor = null,
             limit = 12,
         } = body;
 
-        let products = await getMasterProducts();
+        let data = await getBaseProducts();
 
-        // 1. Search
+        // جستجو
         if (query) {
             const q = query.toLowerCase();
-            products = products.filter(
-                (p) => p.name.toLowerCase().includes(q) || p.detail.toLowerCase().includes(q)
-            );
+            data = data.filter(p => p.name.toLowerCase().includes(q));
         }
 
-        // 2. Categories (multi-select)
-        if (categories.length > 0) {
-            products = products.filter((p) => categories.includes(p.category));
+        // دسته‌بندی
+        if (categories.length) {
+            const set = new Set(categories);
+            data = data.filter(p => set.has(p.category));
         }
 
-        // 3. Tags
-        if (tags.length > 0) {
-            products = products.filter((p) => tags.some((tag: string) => p.tags.includes(tag as any)));
-        }
+        // موجودی
+        if (stock === 'in_stock') data = data.filter(p => p.inStock);
+        else if (stock === 'out_of_stock') data = data.filter(p => !p.inStock);
 
-        // 4. Stock
-        if (stock === 'in_stock') products = products.filter((p) => p.inStock);
-        if (stock === 'out_of_stock') products = products.filter((p) => !p.inStock);
+        // قیمت
+        data = data.filter(p => p.price >= minPrice && p.price <= maxPrice);
 
-        // 5. Price range
-        products = products.filter((p) => p.price >= minPrice && p.price <= maxPrice);
-
-        // 6. Sorting
+        // مرتب‌سازی
         switch (sort) {
             case 'price_asc':
-                products.sort((a, b) => a.price - b.price);
+                data.sort((a, b) => a.price - b.price);
                 break;
             case 'price_desc':
-                products.sort((a, b) => b.price - a.price);
+                data.sort((a, b) => b.price - a.price);
                 break;
             case 'popular':
-                products.sort((a, b) => b.views - a.views);
+                data.sort((a, b) => b.views - a.views);
                 break;
             case 'bestseller':
-                products.sort((a, b) => {
-                    if (a.isBestSeller && !b.isBestSeller) return -1;
-                    if (!a.isBestSeller && b.isBestSeller) return 1;
-                    return (b.rank ?? 0) - (a.rank ?? 0);
-                });
+                data.sort((a, b) => (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0));
                 break;
-            default: // 'newest'
-                products.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            default: // newest
+                data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         }
 
-        // 7. Cursor pagination
+        // پیاده‌سازی cursor-based pagination با index (برای سادگی)
         let startIndex = 0;
         if (cursor) {
-            const idx = products.findIndex((p) => p.id === cursor);
-            startIndex = idx >= 0 ? idx + 1 : 0;
+            const foundIndex = data.findIndex(p => p.id === cursor);
+            if (foundIndex !== -1) startIndex = foundIndex + 1;
         }
-        const sliced = products.slice(startIndex, startIndex + limit);
-        const nextCursor = startIndex + limit < products.length ? sliced[sliced.length - 1]?.id : null;
+        const paginated = data.slice(startIndex, startIndex + limit);
+        const nextCursor = startIndex + limit < data.length ? paginated[paginated.length - 1]?.id : null;
+
+        await sleep(80); // تجربه کاربری نرم‌تر
 
         return NextResponse.json({
-            data: sliced,
+            data: paginated,
+            total: data.length,
             nextCursor,
-            total: products.length,
         });
-    } catch (err) {
-        console.error('API error:', err);
-        return NextResponse.json({ data: [], error: 'Server error' }, { status: 500 });
+    } catch (err: any) {
+        return NextResponse.json(
+            {
+                data: [],
+                total: 0,
+                nextCursor: null,
+                error: err.message,
+            },
+            { status: 500 }
+        );
     }
 }
